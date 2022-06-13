@@ -2,9 +2,17 @@
 
 include "../../../autoloader.php";
 
-use App\Services\CityService;
-use app\Utilities\Response;
-use app\Utilities\Validator;
+use \App\Services\CityService;
+use \App\Utilities\Response;
+use \App\Validate\Validator;
+use \App\Utilities\CacheUtilities;
+
+$token= getBearerToken();
+$user=isValidToken($token);
+
+if(!$user)
+
+    Response::respondeAndDie(["not acces..."],Response::HTTP_UNAUTHORIZED);
 
 
 
@@ -17,10 +25,24 @@ $city_service=new CityService();
 switch ($method) {
 
     case 'GET':
-      
+        if( CacheUtilities::cache_exist())
+            Response::setheader();
+        
+        CacheUtilities::start();
         $validator=new Validator();
 
         $province_id=$_GET['province_id']?? null;
+
+        if(!hasAccessToProvince($user,$province_id)){
+
+            Response::respondeAndDie(["you have no access to this province"],Response::HTTP_NOT_ACCEPTABLE);
+
+        }
+
+
+
+
+
         $page=$_GET['page']??null;
         $page_size=$_GET['page_size']?? null;
         $fields=$_GET['fields']?? "*";
@@ -38,8 +60,8 @@ switch ($method) {
 
         $response=$city_service->getsities($data);
 
-         Response::respondeAndDie($response,Response::HTTP_OK);
-        
+        echo Response::responde($response,Response::HTTP_OK);
+         CacheUtilities::end();
 
     
     case 'POST':

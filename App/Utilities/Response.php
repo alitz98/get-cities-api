@@ -25,7 +25,7 @@ class Response{
     }
 
 
-    public static function setheader($status_code)
+    public static function setheader($status_code=self::HTTP_OK)
     {
         header('Access-Control-Allow-Origin: *');
 
